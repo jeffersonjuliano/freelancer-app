@@ -44,7 +44,7 @@ Agora você pode rodar o servidor, que vai servir tanto a API quanto o site:
 ```bash
 npm run dev:server
 ```
-*(Nota: O comando `dev:server` roda o backend. Como configuramos o backend para servir o frontend construído na pasta `dist`, basta acessar o endereço abaixo)*
+*(Nota: O comando `dev:server` roda o backend. Como configuramos o backend para servir o frontend construído na pasta `dist`, basta acessar o endereço abaixo. **Não é necessário rodar o cliente na porta 5173 em produção, pois o servidor na porta 3000 cuidará de tudo.**)*
 
 ### 5. Acessar
 Abra o navegador e acesse:
