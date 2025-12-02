@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from './db.js';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const SECRET_KEY = 'super-secret-key-change-in-production';
 
 app.use(cors());

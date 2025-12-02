@@ -1,0 +1,121 @@
+# Manual de Implantação - Freelancer App
+**Destino**: Ubuntu Server 22.04
+**IP do Servidor**: 192.168.0.235
+**Porta**: 5173
+
+Este guia descreve o processo de exportação, transferência e execução da aplicação em um ambiente de produção.
+
+## 1. Preparação (Sua Máquina Local)
+
+Antes de enviar os arquivos, vamos preparar o pacote da aplicação.
+
+1.  **Gerar o Build do Frontend**:
+    Abra o terminal na pasta raiz do projeto (`freelancer-app`) e execute:
+    ```bash
+    npm install
+    npm run build
+    ```
+    Isso criará uma pasta `dist` com os arquivos estáticos otimizados.
+
+2.  **Empacotar a Aplicação**:
+    Crie um arquivo `.zip` ou `.tar.gz` contendo:
+    -   Pasta `dist` (gerada acima)
+    -   Pasta `server`
+    -   Arquivo [package.json](file:///c:/Users/jeffe/Documents/AntiGravity/freelancer-app/package.json) (da raiz)
+    -   Arquivo [package-lock.json](file:///c:/Users/jeffe/Documents/AntiGravity/freelancer-app/package-lock.json) (da raiz)
+
+    *Nota: Não inclua a pasta `node_modules` ou o arquivo [database.sqlite](file:///c:/Users/jeffe/Documents/AntiGravity/freelancer-app/database.sqlite) se quiser começar com um banco limpo.*
+
+## 2. Configuração do Servidor (Ubuntu 22.04)
+
+Acesse o servidor via SSH:
+```bash
+ssh usuario@192.168.0.235
+```
+
+### 2.1. Instalar Node.js
+Instale a versão LTS do Node.js:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+Verifique a instalação:
+```bash
+node -v
+npm -v
+```
+
+### 2.2. Instalar PM2 (Gerenciador de Processos)
+O PM2 manterá sua aplicação rodando em segundo plano.
+
+```bash
+sudo npm install -g pm2
+```
+
+## 3. Implantação
+
+### 3.1. Transferir Arquivos
+Envie o arquivo compactado para o servidor (use SCP, FileZilla, etc.). Exemplo com SCP:
+```bash
+scp projeto.zip usuario@192.168.0.235:~/
+```
+
+### 3.2. Extrair e Instalar Dependências
+No servidor:
+
+```bash
+# Criar diretório da app
+mkdir -p ~/freelancer-app
+mv projeto.zip ~/freelancer-app/
+cd ~/freelancer-app
+
+# Extrair (se for zip)
+sudo apt-get install unzip
+unzip projeto.zip
+
+# Instalar dependências de produção
+npm install --production
+cd server
+npm install --production
+cd ..
+```
+
+### 3.3. Configurar e Rodar
+
+A aplicação foi configurada para aceitar a porta via variável de ambiente.
+
+1.  **Iniciar com PM2**:
+    Execute o seguinte comando para iniciar o servidor na porta **5173**:
+
+    ```bash
+    PORT=5173 pm2 start server/index.js --name "freelancer-app"
+    ```
+
+2.  **Salvar Configuração de Inicialização**:
+    Para que a aplicação inicie automaticamente se o servidor reiniciar:
+
+    ```bash
+    pm2 save
+    pm2 startup
+    ```
+    (Execute o comando que o `pm2 startup` exibir).
+
+## 4. Verificação
+
+Acesse no seu navegador:
+`http://192.168.0.235:5173`
+
+### Comandos Úteis do PM2
+-   Ver status: `pm2 status`
+-   Ver logs: `pm2 logs freelancer-app`
+-   Reiniciar: `pm2 restart freelancer-app`
+-   Parar: `pm2 stop freelancer-app`
+
+## Notas Importantes
+-   **Banco de Dados**: O arquivo [database.sqlite](file:///c:/Users/jeffe/Documents/AntiGravity/freelancer-app/database.sqlite) será criado automaticamente dentro da pasta `server` na primeira execução.
+-   **Firewall**: Se não conseguir acessar, verifique se a porta 5173 está liberada no firewall do Ubuntu:
+    ```bash
+    sudo ufw allow 5173
+    ```

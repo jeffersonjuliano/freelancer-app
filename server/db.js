@@ -124,9 +124,7 @@ export async function getDb() {
   // Seed Coverage Reasons
   const reasons = ['Falta', 'Falta Abonada', 'Férias', 'Posto Vago'];
   for (const reason of reasons) {
-    try {
-      await db.run('INSERT INTO coverage_reasons (name) VALUES (?)', [reason]);
-    } catch { /* Already exists */ }
+    await db.run('INSERT OR IGNORE INTO coverage_reasons (name) VALUES (?)', [reason]);
   }
 
   return db;
